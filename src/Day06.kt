@@ -2,35 +2,31 @@
 // millisecond you spend at the beginning of the race holding down the button, the boat's speed
 // increases by one millimeter per millisecond.
 class Boat {
-    var holdTime: Int = 0
-        private set
-//    var runTime: Int = 0
-//        private set
+    private var holdTime: Long = 0
 
-    fun holdFor(time: Int) {
+    fun holdFor(time: Long) {
         holdTime = time
     }
 
     // How far will the boat travel in the given time
-    fun runFor(time: Int): Int {
+    fun runFor(time: Long): Long {
         return time * holdTime
     }
 
     fun reset() {
         holdTime = 0
-//        runTime = 0
     }
 }
 
 data class Race(
-    val time: Int,
-    val distance: Int,
+    val time: Long,
+    val distance: Long,
 ) {
-    fun isWinner(boat: Boat, remainingTime: Int): Boolean {
+    fun isWinner(boat: Boat, remainingTime: Long): Boolean {
         return boat.runFor(remainingTime) > distance
     }
 
-    fun timeRemaining(elapsedTime: Int): Int {
+    fun timeRemaining(elapsedTime: Long): Long {
         return maxOf(0, time - elapsedTime)
     }
 }
@@ -47,17 +43,24 @@ fun <T, K, S> combineLists(l1: List<T>, l2: List<K>, transform: (T, K) -> S): Li
 fun main() {
     fun parseInput1(input: List<String>): List<Race> {
         val whitespace = "\\s+".toRegex()
-        val times = input[0].substringAfter("Time:").split(whitespace).mapNotNull { it.toIntOrNull() }
-        val distances = input[1].substringAfter("Distance:").split(whitespace).mapNotNull { it.toIntOrNull() }
+        val times = input[0].substringAfter("Time:").split(whitespace).mapNotNull { it.toLongOrNull() }
+        val distances = input[1].substringAfter("Distance:").split(whitespace).mapNotNull { it.toLongOrNull() }
         val races = combineLists(times, distances) { time, distance ->
             Race(time, distance)
         }
         return races
     }
 
-    fun getWinsCount1(race: Race): Int {
-        var count = 0
-        var boat = Boat()
+    fun parseInput2(input: List<String>): Race {
+        val regex = "[^0-9]".toRegex()
+        val time = input[0].replace(regex, "").toLong()
+        val distance = input[1].replace(regex, "").toLong()
+        return Race(time, distance)
+    }
+
+    fun getWinsCount1(race: Race): Long {
+        var count = 0L
+        val boat = Boat()
         for (i in 1..race.time) {
             boat.holdFor(i)
             if (race.isWinner(boat, race.timeRemaining(i))) {
@@ -68,17 +71,18 @@ fun main() {
         return count
     }
 
-    fun part1(input: List<String>): Int {
+    fun part1(input: List<String>): Long {
         val races: List<Race> = parseInput1(input)
-        var total = 1
+        var total = 1L
         races.forEach { race ->
             total *= getWinsCount1(race)
         }
         return total
     }
 
-    fun part2(input: List<String>): Int {
-        return input.size
+    fun part2(input: List<String>): Long {
+        val race = parseInput2(input)
+        return getWinsCount1(race)
     }
 
     val input = readInput("Day06")
